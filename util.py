@@ -77,15 +77,38 @@ def exact_userfeature(user_file,feature_file):
 
 
     
-def exact_itemfeature(item_file,user_file,feature_file):
-    """
+def extract_userfeature(user_file  ,feature_file=none):
+	  """
       Input:
           item_file:
-          user_file:
-      Output: item_feature.csv   
+      Output:file   
+      """
+	#load data
+	raw_data=pd.read_table(user_file,sep=',')
+	#buy_numbers
+	buy    =raw_data[raw_data['behavior_type']==4]
+
+	target_item = pd.read_table('tianchi_mobile_recommend_train_user_Item2BPredict.csv',sep=',')
+	#buy_numbers
+	buy_target_item=pd.merge(target_item, buy, how='inner', on='item_id', left_on=None, right_on=None, left_index=False, right_index=False, sort=False, suffixes=('_x', '_y'), copy=True)
+
+	item_buy_num = buy_target_item['item_id'].value_counts() 
+	item_buy_num.to_csv('feature_file_item.csv')    
+
+	pass
+	
+def extract_userfeature(user_file  ,feature_file=none):
     """
-    pass
-def exact_useritemfeature(user_file,feature_file):
+      Input:
+          user_file:
+      Output:file   """
+    #load data
+    raw_data=pd.read_table(user_file,sep=',')
+    #buy_numbers
+    buy    =raw_data[raw_data['behavior_type']==4]
+
+    user_buy_num=buy['user_id'].value_counts() 
+    user_buy_num.to_csv('feature_file_user.csv')   
     pass
     
     

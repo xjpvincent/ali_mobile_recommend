@@ -57,58 +57,42 @@ def evaluate_model(test_label_file,predict_label_file):
     result[2]=2.0*result[0]*result[1]/(result[0]+result[1])
     return result
     
-
-def exact_userfeature(user_file,feature_file):
-    """
-      Input:
-          user_file:
-      Output:file    
-    """
+    
+def extract_itemfeature(user_file,filename="feature_item.csv"):
     #load data
-    user_data=pd.read_csv(user_file)
-    feature_data=pd.read_csv(feature_file)
+    raw_data=pd.read_table(user_file)
     #buy_numbers
-    
-    
-    
-    #save feature_data
-    feature_data.to_csv(feature_file,index=False)    
-    pass
+    buy    =raw_data[raw_data['behavior_type']==4]
+    target_item = pd.read_table('tianchi_mobile_recommend_train_item.csv',sep=',')
+    #buy_numbers
+    buy_target_item=pd.merge(target_item, buy, how='inner', on='item_id', left_on=None, right_on=None, left_index=False, right_index=False, sort=False, suffixes=('_x', '_y'), copy=True) 
+    item_buy_num = buy_target_item['item_id'].value_counts()
+    item_buy_num.to_csv(filename)   
 
-
-    
-def extract_userfeature(user_file  ,feature_file=none):
-	  """
-      Input:
-          item_file:
-      Output:file   
-      """
-	#load data
-	raw_data=pd.read_table(user_file,sep=',')
-	#buy_numbers
-	buy    =raw_data[raw_data['behavior_type']==4]
-
-	target_item = pd.read_table('tianchi_mobile_recommend_train_user_Item2BPredict.csv',sep=',')
-	#buy_numbers
-	buy_target_item=pd.merge(target_item, buy, how='inner', on='item_id', left_on=None, right_on=None, left_index=False, right_index=False, sort=False, suffixes=('_x', '_y'), copy=True)
-
-	item_buy_num = buy_target_item['item_id'].value_counts() 
-	item_buy_num.to_csv('feature_file_item.csv')    
-
-	pass
 	
-def extract_userfeature(user_file  ,feature_file=none):
+def extract_userfeature(train_file,feature_file="feature_user.csv"):
     """
       Input:
           user_file:
       Output:file   """
     #load data
-    raw_data=pd.read_table(user_file,sep=',')
-    #buy_numbers
-    buy    =raw_data[raw_data['behavior_type']==4]
+      
+    feature_user=pd.read_csv(feature_file)
+    train_data=pd.read_csv(train_file)
+    #购买量
+    feature_user=user_buynums(train_data,feature_user)
+    #购物车量
+    feature_user=user_cartnums(train_data,feature_user)
+    
+    
+    #保存
+    feature_user.to_csv(feature_file,index=False)
+    
 
-    user_buy_num=buy['user_id'].value_counts() 
-    user_buy_num.to_csv('feature_file_user.csv')   
+def exact_useritemfeature(user_file,feature_file):
+    raw_data=pd.read_table(user_file,sep=',')
+    
+    
     pass
     
     
@@ -120,18 +104,69 @@ def merge_feature(user_feature,item_feature,useritem_feature,feature_file):
     
 """
 Defined the subfunction in this section 
+
 """
 def sample_user(user_file,sample_user):
-    
+    df=pd.read_csv(user_file)
+    user_id=df.user_id.unique()
+    li=user_id.tolist()
+    df=pd.DataFrame({'user_id':li})
+    df.to_csv(sample_user,index=False)    
     
 def sample_item(item_file,sample_item):
+    df=pd.read_csv(item_file)
+    user_id=df.item_id.unique()
+    li=user_id.tolist()
+    df=pd.DataFrame({'item_id':li})
+    df.to_csv(sample_user,index=False)    
     
     
 
+##############################################################################
+####提取特征的子函数############
+  
+def user_buynums(user_data,feature_user):
+    item_buy=user_data.loc[:,['user_id','behavior_type']]
+    item_buy=item_buy[item_buy.behavior_type==4]
+    item_buy.behavior_type=1
+    item_buy=item_buy.groupby("user_id").sum()
+    item_buy['user_id']=item_buy.index
+    item_buy['buy_nums']=item_buy.behavior_type
+#    item_buy=item_buy.loc[:,['user_id','buy_num']]
+    del item_buy['behavior_type']
+    feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
+    feature_user.fillna(0)
+    return feature_user
+def user_cartnums(user_data,feature_user):
+    item_buy=user_data.loc[:,['user_id','behavior_type']]
+    item_buy=item_buy[item_buy.behavior_type==3]
+    item_buy.behavior_type=1
+    item_buy=item_buy.groupby("user_id").sum()
+    item_buy['user_id']=item_buy.index
+    item_buy['buy_nums']=item_buy.behavior_type
+#    item_buy=item_buy.loc[:,['user_id','buy_num']]
+    del item_buy['behavior_type']
+    feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
+    feature_user.fillna(0)
+    return feature_user
+
+    
+def item_buynums(item_feature,item_data):
+    
+    return item_feature
+    
+##############################################################################
 #test code    
 if __name__=="__main__":
+    sample_user('tianchi_mobile_recommend_train_user.csv','feature_user.csv')
+    extract_userfeature('train_data.csv')
+   # sample_user('train_data.csv','feature_user.csv')
     
     #test evaluate_model
-    print evaluate_model("test_label.csv","predict_label.csv")
+   # print evaluate_model("test_label.csv","predict_label.csv")
+   # sample_item('tianchi_mobile_recommend_train_item.csv','item_feature.csv')
+
+    
+    #
     
     

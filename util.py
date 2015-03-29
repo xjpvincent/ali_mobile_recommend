@@ -2,11 +2,10 @@
 """
 Created on Sat Mar 28 19:38:08 2015
 
-@author: xujingping
+@author: xujingping, simin
 """
 
 import pandas as pd
-import csv
 
 
 def list2csv(li,filename):
@@ -17,10 +16,6 @@ def list2csv(li,filename):
         li2.append(item[1])
     df=pd.DataFrame({'user_id':li1, 'item_id':li2})
     df.to_csv(filename,index=False)
-
-def loaddata():
-    train_data=pd.read_csv("")
-    test_data=pd.read_csv()
       
 
 def data2lable(test_data_file,filename):
@@ -74,31 +69,52 @@ def extract_userfeature(train_file,feature_file="feature_user.csv"):
     """
       Input:
           user_file:
-      Output:file   """
-    #load data
-      
+      Output:file  
+    """
+    
+    #load data      
     feature_user=pd.read_csv(feature_file)
     train_data=pd.read_csv(train_file)
+
     #购买量
     feature_user=user_buynums(train_data,feature_user)
     #购物车量
     feature_user=user_cartnums(train_data,feature_user)
-    
-    
+    #收藏量
+    feature_user=user_shoucangnums(train_data,feature_user)
+    #点击量
+    feature_user=user_clicknums(train_data,feature_user) 
+    #点击购买比
+    pass
+    #收藏购买比
+    pass
+    #购物车购买比
+    pass
+
     #保存
     feature_user.to_csv(feature_file,index=False)
     
-
-def exact_useritemfeature(user_file,feature_file):
-    raw_data=pd.read_table(user_file,sep=',')
     
     
-    pass
+def merge_feature(userfeature_file="feature_user.csv",itemfeature_file="feature_item.csv",useritemfeature_file="feature_useritem.csv",feature_file="featues_train.csv"):
+    #load data
+    user_feature=pd.read_csv(userfeature_file)
+    item_feature=pd.read_csv(itemfeature_file)
+    useritem_feature=pd.read_csv(useritemfeature_file)
+    #merge
+    useritem_feature=pd.merge(useritem_feature,user_feature)
+    useritem_feature=pd.merge(useritem_feature,item_feature)
     
+    #save 
+    useritem_feature.to_cvs(feature_file)  
     
-def merge_feature(user_feature,item_feature,useritem_feature,feature_file):
-    
-    pass
+def cut_traindata(traindata_file,date_cut,pre_traindata,post_traindata):
+    #load data
+    traindata=pd.read_csv(traindata_file)
+    pre=traindata[traindata.date<date_cut]
+    post=traindata[traindata.date>=date_cut]
+    pre.to_csv(pre_traindata)
+    post.to_csv(post_traindata)
     
     
     
@@ -124,7 +140,8 @@ def sample_item(item_file,sample_item):
 
 ##############################################################################
 ####提取特征的子函数############
-  
+
+##user features ##  
 def user_buynums(user_data,feature_user):
     item_buy=user_data.loc[:,['user_id','behavior_type']]
     item_buy=item_buy[item_buy.behavior_type==4]
@@ -137,22 +154,61 @@ def user_buynums(user_data,feature_user):
     feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
     feature_user.fillna(0)
     return feature_user
+    
 def user_cartnums(user_data,feature_user):
     item_buy=user_data.loc[:,['user_id','behavior_type']]
     item_buy=item_buy[item_buy.behavior_type==3]
     item_buy.behavior_type=1
     item_buy=item_buy.groupby("user_id").sum()
     item_buy['user_id']=item_buy.index
-    item_buy['buy_nums']=item_buy.behavior_type
+    item_buy['cart_nums']=item_buy.behavior_type
+#    item_buy=item_buy.loc[:,['user_id','buy_num']]
+    del item_buy['behavior_type']
+    feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
+    feature_user.fillna(0)
+    return feature_user
+    
+def user_clicknums(user_data,feature_user):
+    item_buy=user_data.loc[:,['user_id','behavior_type']]
+    item_buy=item_buy[item_buy.behavior_type==1]
+    item_buy.behavior_type=1
+    item_buy=item_buy.groupby("user_id").sum()
+    item_buy['user_id']=item_buy.index
+    item_buy['click_nums']=item_buy.behavior_type
+#    item_buy=item_buy.loc[:,['user_id','buy_num']]
+    del item_buy['behavior_type']
+    feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
+    feature_user.fillna(0)
+    return feature_user
+    
+def user_shoucangnums(user_data,feature_user):
+    item_buy=user_data.loc[:,['user_id','behavior_type']]
+    item_buy=item_buy[item_buy.behavior_type==2]
+    item_buy.behavior_type=1
+    item_buy=item_buy.groupby("user_id").sum()
+    item_buy['user_id']=item_buy.index
+    item_buy['shoucang_nums']=item_buy.behavior_type
 #    item_buy=item_buy.loc[:,['user_id','buy_num']]
     del item_buy['behavior_type']
     feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
     feature_user.fillna(0)
     return feature_user
 
+# 提取ylabel
+def extract_ylabel(user_id_file,item_id_file,train_data_file,lable_file):
+    user_id=pd.read_csv(user_id_file)
+    item_id=pd.read_csv(item_id_file)
+    train_data=pd.read_csv(train_data_file)
+    train_data=train_data[train_data.behavior_type==4]
+    label=train_data.loc[:,['user_id','item_id']]
+    ylabel=pd.merge(user_id,item_id)
+    ylabel=pd.merge(ylabel,label)
+    #save 
+    ylabel.to_csv(lable_file)
+    #merge
     
 def item_buynums(item_feature,item_data):
-    
+
     return item_feature
     
 ##############################################################################

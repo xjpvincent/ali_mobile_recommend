@@ -132,7 +132,7 @@ def merge_feature(userfeature_file="feature_user.csv",itemfeature_file="feature_
     useritem_feature=pd.merge(useritem_feature,train_label,how='outer',on=['user_id','item_id'])
     #save 
     useritem_feature=useritem_feature.fillna(0)
-    useritem_feature.to_csv(feature_file,index=False)  
+    useritem_feature.to_cvs(feature_file,index=False)  
     
 #cut the train data from date_cut    
 def cut_traindata(traindata_file,date_cut,pre_traindata,post_traindata):

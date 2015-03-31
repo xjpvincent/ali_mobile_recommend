@@ -76,8 +76,9 @@ def extract_userfeature(train_file,feature_file="feature_user.csv"):
       Output:file  
     """    
     #load data      
-    feature_user=pd.read_csv(feature_file)
+    #feature_user=pd.read_csv(feature_file)
     train_data=pd.read_csv(train_file)
+    feature_user=pd.DataFrame({'user_id':train_data.user_id.unique()})
 
     #购买量
     feature_user=user_buynums(train_data,feature_user)
@@ -127,8 +128,8 @@ def merge_feature(userfeature_file="feature_user.csv",itemfeature_file="feature_
     useritem_feature=pd.read_csv(useritemfeature_file)
     train_label=pd.read_csv(label_file)
     #merge
+    useritem_feature=pd.merge(useritem_feature,item_feature,how='inner',on='item_id')
     useritem_feature=pd.merge(useritem_feature,user_feature,how='outer',on='user_id')
-    useritem_feature=pd.merge(useritem_feature,item_feature,how='outer',on='item_id')
     useritem_feature=pd.merge(useritem_feature,train_label,how='outer',on=['user_id','item_id'])
     #save 
     useritem_feature=useritem_feature.fillna(0)
@@ -276,8 +277,8 @@ def extract_ylabel(train_data_file,item_id_file,lable_file):
 if __name__=="__main__":
     
     #split the train data
-    cut_traindata('tianchi_mobile_recommend_train_user.csv','2014-12-17','test_data.csv','test_data_lable.csv')
-    cut_traindata('test_data.csv','2014-12-16','train_data.csv','train_label_data.csv')
+   # cut_traindata('tianchi_mobile_recommend_train_user.csv','2014-12-17','test_data.csv','test_data_lable.csv')
+  #  cut_traindata('test_data.csv','2014-12-16','train_data.csv','train_label_data.csv')
     #extract user feature
     extract_userfeature(train_file='train_data.csv',feature_file="feature_user.csv")
     #extract item feature

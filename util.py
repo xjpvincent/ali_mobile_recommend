@@ -9,6 +9,11 @@ import pandas as pd
 import numpy as np
 
 
+#filter the noise data
+def datafilter(train_data_file,filtered_file):
+    
+    pass
+
 def list2csv(li,filename):
     li1=[]
     li2=[]
@@ -36,7 +41,7 @@ def data2useritem(data_file,filename,behavior):
     list2csv(user_item,filename)
     return "success"
     
-def evaluate_model(test_label_file,predict_label_file):    
+def evaluate_model(test_label_file,predict_label_file):   
     """
       Input:
           test_label_file:
@@ -61,6 +66,8 @@ def extract_itemfeature(train_data_file,item_file,feature_file="feature_user.csv
     
     #
     feature_item=item_buynums(train_data,feature_item)
+    
+    
     
     
     #load data
@@ -113,10 +120,18 @@ def extract_useritemfeature(train_file="train_data.csv",feature_file="feature_us
     #cart7
     ui=df.loc[:,['user_id','item_id','behavior_type']]   
     ui=ui[ui.behavior_type>1]
-    
+        
     f1=ui.groupby(['user_id','item_id']).mean()
     f1['key']=f1.index.tolist()    
     feature_useritem=pd.merge(feature_useritem,f1,how='outer',on='key')
+    
+    #lager than 2014-12-15
+    ui=df[(df.time>'2014-12-10')&(df.behavior_type>1)]
+    
+    
+    
+    
+    del feature_useritem['key']
     #save data
     feature_useritem.to_csv(feature_file,index=False)
     
@@ -133,6 +148,10 @@ def merge_feature(userfeature_file="feature_user.csv",itemfeature_file="feature_
     useritem_feature=pd.merge(useritem_feature,train_label,how='outer',on=['user_id','item_id'])
     #save 
     useritem_feature=useritem_feature.fillna(0)
+    #as type
+    useritem_feature['user_id']=useritem_feature['user_id'].astype(int)
+    useritem_feature['item_id']=useritem_feature['user_id'].astype(int)
+    useritem_feature['label']=useritem_feature['label'].astype(int)
     useritem_feature.to_csv(feature_file,index=False)  
     
 #cut the train data from date_cut    
@@ -213,7 +232,8 @@ def user_cartnums(user_data,feature_user):
 #    item_buy=item_buy.loc[:,['user_id','buy_num']]
     del item_buy['behavior_type']
     feature_user=pd.merge(feature_user,item_buy,how='outer',on=None) 
-    feature_user.fillna(0)
+    feature_user.fillna(0)  #  cut_traindata('test_data.csv','2014-12-16','train_data.csv','train_label_data.csv')
+
     return feature_user
     
 def user_clicknums(user_data,feature_user):
@@ -277,16 +297,16 @@ def extract_ylabel(train_data_file,item_id_file,lable_file):
 if __name__=="__main__":
     
     #split the train data
-   # cut_traindata('tianchi_mobile_recommend_train_user.csv','2014-12-17','test_data.csv','test_data_lable.csv')
-  #  cut_traindata('test_data.csv','2014-12-16','train_data.csv','train_label_data.csv')
+    cut_traindata('tianchi_user.csv','2014-12-18','test_data.csv','test_data_lable.csv')
+    cut_traindata('test_data.csv','2014-12-17','train_data.csv','train_label_data.csv')
     #extract user feature
     extract_userfeature(train_file='train_data.csv',feature_file="feature_user.csv")
     #extract item feature
-    extract_itemfeature(train_data_file='train_data.csv',item_file='tianchi_mobile_recommend_train_item.csv',feature_file="feature_item.csv")
+    extract_itemfeature(train_data_file='train_data.csv',item_file='tianchi_item.csv',feature_file="feature_item.csv")
     #extract user_item feature
     extract_useritemfeature(train_file="train_data.csv",feature_file="feature_useritem.csv")
     #extract ylabel
-    extract_ylabel('train_data.csv','tianchi_mobile_recommend_train_item.csv','train_label.csv')
+    extract_ylabel('train_label_data.csv','tianchi_item.csv','train_label.csv')
     merge_feature(userfeature_file="feature_user.csv",itemfeature_file="feature_item.csv",label_file="train_label.csv",useritemfeature_file="feature_useritem.csv",feature_file="featues_train.csv")
     #extract user feature
 

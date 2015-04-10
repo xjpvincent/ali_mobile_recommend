@@ -42,6 +42,7 @@ def evaluate_model(test_label_file,predict_label_file):
     result[2]=2.0*result[0]*result[1]/(result[0]+result[1])
     return result
 
+#@author: simin lee
 def user_buy_nums(train_x):
     user_buy_nums=train_x.loc[:,['user_id','behavior_type']]
     user_buy_nums=user_buy_nums[user_buy_nums.behavior_type==4]
@@ -78,29 +79,8 @@ def get_behavior_and_hit_at_certain_time(raw_data,target_buyed,new_time):
 ##############################################################################
 #test code    
 if __name__=="__main__":
+     print 'Good luck'
     
-    #split the train data
-    cut_traindata('tianchi_user.csv','2014-12-18','test_data.csv','test_data_lable.csv')
-    cut_traindata('test_data.csv','2014-12-17','train_data.csv','train_label_data.csv')
-    #extract user feature
-    extract_userfeature(train_file='train_data.csv',feature_file="feature_user.csv")
-    #extract item feature
-    extract_itemfeature(train_data_file='train_data.csv',item_file='tianchi_item.csv',feature_file="feature_item.csv")
-    #extract user_item feature
-    extract_useritemfeature(train_file="train_data.csv",feature_file="feature_useritem.csv")
-    #extract ylabel
-    extract_ylabel('train_label_data.csv','tianchi_item.csv','train_label.csv')
-    merge_feature(userfeature_file="feature_user.csv",itemfeature_file="feature_item.csv",label_file="train_label.csv",useritemfeature_file="feature_useritem.csv",feature_file="featues_train.csv")
-    #extract user feature
-
-    #sample_user('tianchi_mobile_recommend_train_user.csv','feature_user.csv')
-   # extract_userfeature('train_data.csv')
-   # sample_user('train_data.csv','feature_user.csv')
- 
-    
-    #test evaluate_model
-   # print evaluate_model("test_label.csv","predict_label.csv")
-   # sample_item('tianchi_mobile_recommend_train_item.csv','item_feature.csv')
 
     
     
